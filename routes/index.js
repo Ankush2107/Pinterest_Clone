@@ -3,30 +3,54 @@ const router = express.Router();
 
 const userModel = require('./users')
 const postModel = require('./post')
+const passport = require('passport');
+
+// User login using this 2 line 
+const localStrategy = require("passport-local");
+passport.authenticate(new localStrategy(userModel.authenticate()));
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-router.get('/createUser', async (req, res, next) => {
-  let createdUser = await userModel.create({
-    username: "Rashmi",
-    password: "kanuaje",
-    posts: [],
-    dp: String, 
-    email: "rashmi@gmail.com",
-    fullname: "Rashmi kanuaje"
-  });
-  res.send(createdUser);
+router.get('/profile', isLoggedIn, (req, res, next) => {
+ res.send("profile");
 });
 
-router.get('/createPost', async (req, res, next) => {
-    let createdPost = await postModel.create({
-      postText: "Hii Everyone",
-      user: "65646b2e8a51588e771a1b19"
+router.post('/register', (req, res) => {
+  const userData = new userModel({
+    username: req.params.username,
+    email: req.params.email,
+    fullname: req.params.fullname
+  })
+
+  userModel.register(userData, req.body.password)
+  .then(function() {
+    passport.authenticate("local")(req, res, function() {
+      res.redirect("/profile")
     })
-    res.send(createdPost);
-});
+  })
+})
+
+router.post('/login', passport.authenticate("local", {
+  successRedirect: "/profile",
+  failureRedirect: "/"
+}), function(req, res) {
+
+})
+
+
+router.get("/logout", (req, res) => {
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    res.redirect('/');
+  });
+})
+
+const isLoggedIn = (req, res, next) => {
+  if(req.isAuthenticated()) return next();
+  res.redirect("/");
+}
 
 module.exports = router;
