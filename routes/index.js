@@ -14,6 +14,10 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
+router.get('/login', (req, res) => {
+  res.render('login');
+})
+
 const isLoggedIn = (req, res, next) => {
   if(req.isAuthenticated()) return next();
   res.redirect("/");
