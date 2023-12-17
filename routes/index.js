@@ -1,13 +1,19 @@
 const express = require('express');
 const router = express.Router();
 
-const userModel = require('./users')
-const postModel = require('./post')
+const userModel = require('./users');
+const postModel = require('./post');
 const passport = require('passport');
 
 // User login using this 2 line 
 const localStrategy = require("passport-local");
 passport.authenticate(new localStrategy(userModel.authenticate()));
+
+const isLoggedIn = (req, res, next) => {
+  if(req.isAuthenticated()) return next();
+  res.redirect("/");
+}
+
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -39,18 +45,14 @@ router.post('/login', passport.authenticate("local", {
 }), function(req, res) {
 
 })
-
-
 router.get("/logout", (req, res) => {
   req.logout(function(err) {
-    if (err) { return next(err); }
+    if (err) { 
+      return next(err); 
+    }
     res.redirect('/');
   });
 })
 
-const isLoggedIn = (req, res, next) => {
-  if(req.isAuthenticated()) return next();
-  res.redirect("/");
-}
 
 module.exports = router;
